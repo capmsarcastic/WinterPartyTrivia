@@ -10,7 +10,7 @@ app = FastAPI()
 url = os.environ.get("SUPABASE_URL")
 key = os.environ.get("SUPABASE_KEY")
 
-if not supabase_url or not supabase_key:
+if not url or not key:
     raise RuntimeError("SUPABASE_URL or SUPABASE_KEY is missing! Check Render Environment Variables.")
 
 supabase: Client = create_client(url, key)
