@@ -7,9 +7,14 @@ app = FastAPI()
 
 # --- 1. SUPABASE SETUP ---
 # Replace these with your actual keys from the Supabase Dashboard
-url = os.environ.get("https://iweabsxhnjhkblfteybj.supabase.co")
-key = os.environ.get("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3ZWFic3hobmpoa2JsZnRleWJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MTE2NjksImV4cCI6MjA5MTE4NzY2OX0._OyyK8CQMio7SmOqAhoH_n5bizWcq-OkzsTLNOziVxc")
+url = os.environ.get("SUPABASE_URL")
+key = os.environ.get("SUPABASE_KEY")
+
+if not supabase_url or not supabase_key:
+    raise RuntimeError("SUPABASE_URL or SUPABASE_KEY is missing! Check Render Environment Variables.")
+
 supabase: Client = create_client(url, key)
+
 
 # --- 2. WEBSOCKET MANAGER ---
 class ConnectionManager:
