@@ -62,7 +62,7 @@ h1, h2, h3, h4, h5, h6 {
   /* Buttons */
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3
-           font-heading font-700 text-base transition-all active:scale-95
+           font-heading font-bold text-base transition-all active:scale-95
            disabled:opacity-40 disabled:cursor-not-allowed select-none;
   }
   .btn-primary {

@@ -30,7 +30,7 @@ export default function Splash() {
       {/* Animated whale */}
       <div className="text-9xl mb-6 animate-pulse-slow select-none">🐋</div>
 
-      <h1 className="font-heading text-4xl font-900 text-ocean-50 mb-2">
+      <h1 className="font-heading text-4xl font-black text-ocean-50 mb-2">
         {STRINGS.splash.heading}
       </h1>
       <p className="text-ocean-300 text-lg mb-12 max-w-xs">

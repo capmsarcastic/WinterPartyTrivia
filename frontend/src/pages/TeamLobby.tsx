@@ -144,7 +144,7 @@ export default function TeamLobby() {
         {/* Score */}
         <div className="card-elevated text-center">
           <p className="text-ocean-300 text-xs uppercase tracking-widest mb-1">{STRINGS.lobby.scoreLabel}</p>
-          <p className="font-heading text-4xl font-900 text-ocean-400">{totalScore.toLocaleString()}</p>
+          <p className="font-heading text-4xl font-black text-ocean-400">{totalScore.toLocaleString()}</p>
         </div>
 
         {/* Passcode */}
