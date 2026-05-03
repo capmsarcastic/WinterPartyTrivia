@@ -106,9 +106,9 @@ export default function Dashboard() {
             </div>
             <button
               onClick={toggleTeamCreation}
-              className={`relative w-12 h-6 rounded-full transition-colors ${teamCreationEnabled ? 'bg-green-500' : 'bg-ocean-600'}`}
+              className={`relative w-12 h-6 rounded-full transition-colors overflow-hidden ${teamCreationEnabled ? 'bg-green-500' : 'bg-ocean-600'}`}
             >
-              <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${teamCreationEnabled ? 'translate-x-6' : 'translate-x-0.5'}`} />
+              <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${teamCreationEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
             </button>
           </div>
 
@@ -120,6 +120,7 @@ export default function Dashboard() {
               onChange={e => setPushPage(e.target.value)}
             >
               <option value="team_lobby">Team lobby</option>
+              <option value="team_join">Pick your team page</option>
               <option value="round_answer">Round — answer page</option>
               <option value="round_results">Round — results page</option>
             </select>

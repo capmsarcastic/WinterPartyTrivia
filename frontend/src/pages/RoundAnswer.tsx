@@ -148,7 +148,7 @@ export default function RoundAnswer() {
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1">
                 <p className="text-ocean-400 text-xs font-medium mb-1">Q{q.order}</p>
-                {round.display_questions_in_app && q.prompt_text && (
+                {q.prompt_text && (q.input_config_json as { show_prompt_text?: boolean }).show_prompt_text !== false && (
                   <p className="text-ocean-100 font-medium">{q.prompt_text}</p>
                 )}
                 {q.prompt_image_url && (

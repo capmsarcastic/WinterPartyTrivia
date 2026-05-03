@@ -7,7 +7,18 @@ import { useDeviceId } from '../hooks/useDeviceId'
 import { useToast } from '../contexts/ToastContext'
 import { TeamEmoji } from '../components/ImagePicker'
 import { STRINGS } from '../strings'
-import type { Message, Player, Round, ScoreEvent, Team } from '../types'
+import type { Message, Player, Round, Team } from '../types'
+
+interface ScoreEventWithRound {
+  id: string
+  team_id: string
+  points: number
+  note: string
+  category: string
+  round_id: string | null
+  awarded_at: string
+  round?: { lifecycle_state: string } | null
+}
 
 function RoundBadge({ state }: { state: string }) {
   const classMap: Record<string, string> = {
@@ -25,18 +36,22 @@ export default function TeamLobby() {
   const { teamId } = useParams<{ teamId: string }>()
   const navigate = useNavigate()
   const deviceId = useDeviceId()
-  const { player, team, setSession, clearSession, updateTeam } = usePlayer()
+  const { player, team, clearSession, updateTeam } = usePlayer()
   const { showToast } = useToast()
 
   const [members, setMembers] = useState<Player[]>([])
   const [rounds, setRounds] = useState<Round[]>([])
-  const [scoreEvents, setScoreEvents] = useState<ScoreEvent[]>([])
+  const [scoreEvents, setScoreEvents] = useState<ScoreEventWithRound[]>([])
   const [messages, setMessages] = useState<Message[]>([])
-  const [passcodeVisible, setPasscodeVisible] = useState(false)
   const [passcode, setPasscode] = useState<string | null>(null)
+  const [passcodeVisible, setPasscodeVisible] = useState(false)
+  const [passcodeLoading, setPasscodeLoading] = useState(false)
   const [showMessageForm, setShowMessageForm] = useState(false)
   const [messageText, setMessageText] = useState('')
   const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const passcodeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Track whether current player has been confirmed on this team
+  const hasConfirmedMembershipRef = useRef(false)
 
   // Redirect if not logged in
   useEffect(() => {
@@ -46,11 +61,15 @@ export default function TeamLobby() {
   }, [player, team, teamId])
 
   async function loadData() {
-    if (!teamId) return
+    if (!teamId || !player) return
     const [membersRes, roundsRes, scoreRes, msgRes] = await Promise.allSettled([
       supabase.from('players').select('*').eq('team_id', teamId).eq('status', 'active'),
       supabase.from('rounds').select('*').neq('lifecycle_state', 'draft').order('order'),
-      supabase.from('score_events').select('*').eq('team_id', teamId).order('awarded_at', { ascending: false }),
+      supabase
+        .from('score_events')
+        .select('*, round:rounds!round_id(lifecycle_state)')
+        .eq('team_id', teamId)
+        .order('awarded_at', { ascending: false }),
       supabase.from('messages')
         .select('*')
         .or(`target_type.eq.broadcast,and(target_type.eq.team,target_id.eq.${teamId})`)
@@ -58,9 +77,31 @@ export default function TeamLobby() {
         .limit(20),
     ])
 
-    if (membersRes.status === 'fulfilled' && membersRes.value.data) setMembers(membersRes.value.data)
+    if (membersRes.status === 'fulfilled' && membersRes.value.data) {
+      const newMembers = membersRes.value.data as Player[]
+      // If we've confirmed membership before and we're no longer in the list, we were booted
+      if (hasConfirmedMembershipRef.current && !newMembers.find(m => m.id === player.id)) {
+        clearSession()
+        navigate('/join', { replace: true, state: { message: 'You have been removed from this team. The passcode has changed.' } })
+        return
+      }
+      if (newMembers.find(m => m.id === player.id)) {
+        hasConfirmedMembershipRef.current = true
+      }
+      setMembers(newMembers)
+    }
+
     if (roundsRes.status === 'fulfilled' && roundsRes.value.data) setRounds(roundsRes.value.data)
-    if (scoreRes.status === 'fulfilled' && scoreRes.value.data) setScoreEvents(scoreRes.value.data)
+
+    if (scoreRes.status === 'fulfilled' && scoreRes.value.data) {
+      // Only show score events from revealed rounds (or non-round events like bonuses/penalties)
+      const allEvents = scoreRes.value.data as ScoreEventWithRound[]
+      const visibleEvents = allEvents.filter(
+        e => !e.round_id || e.round?.lifecycle_state === 'revealed'
+      )
+      setScoreEvents(visibleEvents)
+    }
+
     if (msgRes.status === 'fulfilled' && msgRes.value.data) setMessages(msgRes.value.data)
   }
 
@@ -70,7 +111,16 @@ export default function TeamLobby() {
 
     const ch = supabase
       .channel(`lobby-${teamId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'players', filter: `team_id=eq.${teamId}` }, loadData)
+      // Split player events: INSERT triggers teammate notification
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'players', filter: `team_id=eq.${teamId}` }, (payload) => {
+        const newPlayer = payload.new as Player
+        if (newPlayer.id !== player?.id) {
+          showToast(`${newPlayer.display_name} joined the team! 👋`, 'info')
+        }
+        loadData()
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'players', filter: `team_id=eq.${teamId}` }, loadData)
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'players', filter: `team_id=eq.${teamId}` }, loadData)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'rounds' }, loadData)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'score_events', filter: `team_id=eq.${teamId}` }, loadData)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
@@ -81,7 +131,7 @@ export default function TeamLobby() {
         const updated = payload.new as Team
         if (updated.status === 'deleted') {
           clearSession()
-          navigate('/join', { replace: true, state: { message: updated.rejection_message } })
+          navigate('/join', { replace: true, state: { message: updated.rejection_message || 'Your team has been removed.' } })
         } else {
           updateTeam(updated)
         }
@@ -96,16 +146,34 @@ export default function TeamLobby() {
     return () => {
       supabase.removeChannel(ch)
       if (heartbeatRef.current) clearInterval(heartbeatRef.current)
+      if (passcodeTimerRef.current) clearTimeout(passcodeTimerRef.current)
     }
   }, [teamId])
 
   const totalScore = scoreEvents.reduce((sum, e) => sum + e.points, 0)
+
+  async function handleRevealPasscode() {
+    if (!player || passcodeLoading) return
+    setPasscodeLoading(true)
+    try {
+      const res = await playerApi.getPasscode(deviceId, player.id) as { passcode: string }
+      setPasscode(res.passcode)
+      setPasscodeVisible(true)
+      if (passcodeTimerRef.current) clearTimeout(passcodeTimerRef.current)
+      passcodeTimerRef.current = setTimeout(() => setPasscodeVisible(false), 5000)
+    } catch {
+      showToast('Could not fetch passcode.', 'error')
+    } finally {
+      setPasscodeLoading(false)
+    }
+  }
 
   async function handleBoot(targetPlayer: Player) {
     if (!player || !team || !window.confirm(STRINGS.lobby.bootConfirm(targetPlayer.display_name))) return
     try {
       const res = await playerApi.bootMember(deviceId, team.id, player.id, targetPlayer.id) as { new_passcode: string }
       showToast(`${targetPlayer.display_name} has been removed. New passcode: ${res.new_passcode}`, 'success')
+      setPasscode(res.new_passcode)
       loadData()
     } catch (err: unknown) {
       showToast((err as Error).message || STRINGS.errors.generic, 'error')
@@ -151,10 +219,15 @@ export default function TeamLobby() {
         <div className="card">
           <button
             className="w-full text-left flex items-center justify-between"
-            onClick={() => setPasscodeVisible(v => !v)}
+            onClick={passcodeVisible ? () => setPasscodeVisible(false) : handleRevealPasscode}
+            disabled={passcodeLoading}
           >
-            <span className="text-sm text-ocean-300">{STRINGS.lobby.passcodeReveal}</span>
-            {passcodeVisible ? <span className="font-mono font-bold text-ocean-100 text-lg tracking-widest">{team.passcode || '????'}</span>
+            <span className="text-sm text-ocean-300">
+              {passcodeLoading ? 'Loading...' : STRINGS.lobby.passcodeReveal}
+              {passcodeVisible && <span className="ml-2 text-xs text-ocean-500">(hides in 5s)</span>}
+            </span>
+            {passcodeVisible && passcode
+              ? <span className="font-mono font-bold text-ocean-100 text-lg tracking-widest">{passcode}</span>
               : <span className="font-mono text-ocean-600 tracking-widest">••••</span>}
           </button>
         </div>
@@ -225,7 +298,7 @@ export default function TeamLobby() {
           )}
         </div>
 
-        {/* Score history */}
+        {/* Score history — only shows scores from revealed rounds */}
         {scoreEvents.length > 0 && (
           <div className="card">
             <h2 className="font-heading font-bold text-ocean-200 mb-3 text-sm uppercase tracking-wide">
@@ -234,7 +307,12 @@ export default function TeamLobby() {
             <div className="space-y-2">
               {scoreEvents.map(e => (
                 <div key={e.id} className="flex items-center justify-between text-sm">
-                  <span className="text-ocean-300 flex-1 min-w-0 truncate">{e.note}</span>
+                  <span className="text-ocean-300 flex-1 min-w-0 truncate">
+                    {e.note}
+                    {e.category && e.category !== 'other' && (
+                      <span className="text-ocean-500 ml-1">— {e.category}</span>
+                    )}
+                  </span>
                   <span className={`font-bold ml-3 shrink-0 ${e.points >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                     {e.points >= 0 ? '+' : ''}{e.points}
                   </span>

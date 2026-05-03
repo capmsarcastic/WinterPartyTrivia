@@ -10,7 +10,7 @@ import type { EventConfig } from '../types'
  */
 export function usePushNavigation() {
   const navigate = useNavigate()
-  const { player, team } = usePlayer()
+  const { player, team, clearSession } = usePlayer()
   const lastPushedAt = useRef<string | null>(null)
 
   useEffect(() => {
@@ -33,6 +33,10 @@ export function usePushNavigation() {
             case 'team_lobby':
               navigate(`/team/${team.id}`)
               break
+            case 'team_join':
+              clearSession()
+              navigate('/join')
+              break
             case 'round_answer': {
               const roundId = (dest.data as { round_id?: string }).round_id
               if (roundId) navigate(`/team/${team.id}/round/${roundId}`)
@@ -51,5 +55,5 @@ export function usePushNavigation() {
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [player, team, navigate])
+  }, [player, team, navigate, clearSession])
 }
