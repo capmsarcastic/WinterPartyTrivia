@@ -14,8 +14,8 @@ export const STRINGS = {
   },
 
   playerName: {
-    label: 'Your name',
-    placeholder: "What do your colleagues call you?",
+    label: 'Pick a display name',
+    placeholder: "Keep it work-appropriate, please.",
     checking: 'Checking availability...',
     taken: 'That name is already taken.',
     available: '✓ Name available!',
@@ -32,7 +32,7 @@ export const STRINGS = {
 
   teamCreator: {
     heading: 'Start a new team',
-    namePlaceholder: 'Your legendary team name...',
+    namePlaceholder: 'Pick an amusing but work-safe team name:',
     nameLabel: 'Team name',
     imageLabel: 'Team vibe',
     passcodeLabel: 'Secret passcode (4 digit number)',
@@ -46,8 +46,8 @@ export const STRINGS = {
   },
 
   pending: {
-    heading: 'Waiting for Stephen to approve the team...',
-    subheading: 'Sit tight. Try shouting "HURRY UP STEPHEN"; it might help.',
+    heading: 'Waiting for Stephen to approve...',
+    subheading: 'Sit tight. Try shouting "HURRY UP"; it might help.',
     cancelButton: 'Cancel',
   },
 
