@@ -1,15 +1,15 @@
 // ============================================================
-// Configurable strings — edit here to inject your personality
+// Configurable strings
 // All player-facing text uses Australian English.
 // ============================================================
 
 export const STRINGS = {
-  appName: 'Winter Trivia Night',
-  appSubtitle: 'The Deep End of Knowledge',
+  appName: 'Winter Party Trivia',
+  appSubtitle: 'Before you ask: yes, Stephen has enough work to do',
 
   splash: {
-    heading: '🐋 Winter Trivia Night',
-    subheading: 'How well do you really know your colleagues?',
+    heading: '🐋 Winter Party Trivia',
+    subheading: 'Easy-peasy ''Ume data lemon''-squeezy',
     cta: "Let's go",
   },
 
@@ -17,7 +17,7 @@ export const STRINGS = {
     heading: 'Pick your team',
     createButton: '+ Create a new team',
     teamCreationClosed: "Team creation is closed for the night.",
-    noTeamsYet: "No teams yet — back to the bar 🍺",
+    noTeamsYet: "No teams yet. Make one by clicking below 👇",
     memberCount: (n: number) => n === 1 ? '1 member' : `${n} members`,
   },
 
@@ -26,10 +26,10 @@ export const STRINGS = {
     namePlaceholder: 'Your legendary team name...',
     nameLabel: 'Team name',
     imageLabel: 'Team vibe',
-    passcodeLabel: 'Secret passcode (4 digits)',
+    passcodeLabel: 'Secret passcode (4 digit number)',
     passcodePlaceholder: '••••',
     yourNameLabel: 'Your name',
-    yourNamePlaceholder: 'What do your colleagues call you?',
+    yourNamePlaceholder: 'Keep it work-appropriate, please',
     submitButton: 'Submit for approval',
     nameCheckingMessage: 'Checking availability...',
     nameTakenMessage: 'That name is taken. Try something else.',
@@ -37,13 +37,13 @@ export const STRINGS = {
   },
 
   pending: {
-    heading: 'Waiting for the admin...',
-    subheading: "Sit tight while your team gets approved.",
+    heading: 'Waiting for Stephen to approve the team...',
+    subheading: 'Sit tight. Try shouting "HURRY UP STEPHEN"; it might help.',
     cancelButton: 'Cancel',
   },
 
   rejection: {
-    heading: "No dice, sorry.",
+    heading: "Oof, Stephen rejected the team, sorry.",
     backButton: 'Back to the join screen',
   },
 
