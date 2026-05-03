@@ -9,7 +9,7 @@ export const STRINGS = {
 
   splash: {
     heading: '🐋 Winter Party Trivia',
-    subheading: 'Easy-peasy ''Ume data lemon''-squeezy',
+    subheading: "Easy-peasy 'Ume data lemon'-squeezy",
     cta: "Let's go",
   },
 
