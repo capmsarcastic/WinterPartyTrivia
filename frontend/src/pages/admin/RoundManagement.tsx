@@ -91,7 +91,7 @@ function QuestionForm({ roundId, question, onSave, onCancel, defaultPoints }: Qu
         </div>
         <div>
           <label className="label">Input type</label>
-          <select className="input" value={inputType} onChange={e => setInputType(e.target.value)}>
+          <select className="input" value={inputType} onChange={e => setInputType(e.target.value as 'multiple_choice' | 'free_text' | 'numeric')}>
             <option value="free_text">Free text</option>
             <option value="multiple_choice">Multiple choice</option>
             <option value="numeric">Numeric</option>

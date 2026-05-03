@@ -20,7 +20,7 @@ export default function Dashboard() {
   async function loadData() {
     try {
       const [cfg, ts, rs] = await Promise.all([
-        adminApi.getEventConfig(),
+        adminApi.getEventConfig() as Promise<{ team_creation_enabled: boolean }>,
         adminApi.getTeams(),
         adminApi.getRounds(),
       ])
