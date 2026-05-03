@@ -1,4 +1,5 @@
 fastapi
-uvicorn
+uvicorn[standard]
 supabase
-websockets
+bcrypt
+python-multipart

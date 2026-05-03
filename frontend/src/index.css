@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   CSS Custom Properties — edit here to retheme the whole app
+   ============================================================ */
+:root {
+  --colour-primary:      #1a4a7a;
+  --colour-secondary:    #0f2744;
+  --colour-accent:       #48cae4;
+  --colour-accent-warm:  #f4a261;
+  --colour-background:   #0a1628;
+  --colour-surface:      #162f54;
+  --colour-surface-2:    #1e3d66;
+  --colour-text:         #e8f4fd;
+  --colour-text-muted:   #7ab3d4;
+  --colour-success:      #52b788;
+  --colour-error:        #e63946;
+  --colour-warning:      #f4a261;
+  --font-heading:        'Nunito', sans-serif;
+  --font-body:           'Inter', sans-serif;
+}
+
+/* ============================================================
+   Base reset
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background-color: var(--colour-background);
+  color: var(--colour-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* ============================================================
+   Utility layer
+   ============================================================ */
+@layer components {
+  /* Card surfaces */
+  .card {
+    @apply rounded-2xl p-4 bg-ocean-700;
+  }
+  .card-elevated {
+    @apply rounded-2xl p-4 bg-ocean-600;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3
+           font-heading font-700 text-base transition-all active:scale-95
+           disabled:opacity-40 disabled:cursor-not-allowed select-none;
+  }
+  .btn-primary {
+    @apply btn bg-ocean-400 text-ocean-900 hover:bg-ocean-300;
+  }
+  .btn-secondary {
+    @apply btn bg-ocean-600 text-ocean-50 hover:bg-ocean-500;
+  }
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-500;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent text-ocean-200 hover:bg-ocean-700;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-sm rounded-lg;
+  }
+  .btn-lg {
+    @apply px-8 py-4 text-lg rounded-2xl;
+  }
+
+  /* Inputs */
+  .input {
+    @apply w-full rounded-xl bg-ocean-800 border border-ocean-600 px-4 py-3
+           text-ocean-50 placeholder-ocean-300 focus:outline-none
+           focus:border-ocean-400 focus:ring-2 focus:ring-ocean-400/30
+           transition-colors;
+  }
+  .label {
+    @apply block text-sm font-medium text-ocean-200 mb-1.5;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-open   { @apply badge bg-green-500/20 text-green-300; }
+  .badge-locked { @apply badge bg-yellow-500/20 text-yellow-300; }
+  .badge-marked { @apply badge bg-blue-500/20 text-blue-300; }
+  .badge-revealed { @apply badge bg-ocean-400/20 text-ocean-300; }
+  .badge-draft  { @apply badge bg-ocean-600/40 text-ocean-300; }
+}
+
+/* ============================================================
+   Scrollbar styling (Webkit)
+   ============================================================ */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--colour-primary); border-radius: 9999px; }
+
+/* ============================================================
+   Safe area insets for notched phones
+   ============================================================ */
+.safe-top    { padding-top: env(safe-area-inset-top); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+/* ============================================================
+   Team emoji image
+   ============================================================ */
+.team-emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  line-height: 1;
+  user-select: none;
+}
+.team-emoji-lg { font-size: 4rem; }
+.team-emoji-xl { font-size: 6rem; }
