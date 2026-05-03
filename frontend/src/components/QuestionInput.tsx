@@ -11,7 +11,7 @@ interface Props {
   adminNote?: string
 }
 
-export function QuestionInput({ question, value, onChange, disabled, showCorrect, correctAnswer, pointsAwarded, adminNote }: Props) {
+export function QuestionInput({ question, value, onChange, disabled, showCorrect, correctAnswer, adminNote }: Props) {
   const { input_type, input_config_json } = question
 
   if (input_type === 'multiple_choice') {
@@ -20,49 +20,63 @@ export function QuestionInput({ question, value, onChange, disabled, showCorrect
     const allowMulti = config.allow_multiple_selections
     const selected = (value as { selected?: string | string[] }).selected
 
-    return (
-      <div className="space-y-2">
-        {options.map((opt, i) => {
-          const isSelected = allowMulti
-            ? Array.isArray(selected) && selected.includes(opt)
-            : selected === opt
-          const isCorrect = showCorrect && (
-            allowMulti
-              ? Array.isArray(correctAnswer) && (correctAnswer as string[]).includes(opt)
-              : correctAnswer === opt
-          )
+    if (allowMulti) {
+      // Keep button-style for multi-select (native multi-select is poor on mobile)
+      return (
+        <div className="space-y-2">
+          {options.map((opt, i) => {
+            const isSelected = Array.isArray(selected) && selected.includes(opt)
+            const isCorrect = showCorrect && Array.isArray(correctAnswer) && (correctAnswer as string[]).includes(opt)
 
-          return (
-            <button
-              key={i}
-              type="button"
-              disabled={disabled}
-              onClick={() => {
-                if (allowMulti) {
+            return (
+              <button
+                key={i}
+                type="button"
+                disabled={disabled}
+                onClick={() => {
                   const curr = Array.isArray(selected) ? selected : []
-                  const next = curr.includes(opt)
-                    ? curr.filter(s => s !== opt)
-                    : [...curr, opt]
+                  const next = curr.includes(opt) ? curr.filter(s => s !== opt) : [...curr, opt]
                   onChange({ selected: next })
-                } else {
-                  onChange({ selected: opt })
-                }
-              }}
-              className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all font-medium
-                ${isCorrect
-                  ? 'border-green-500 bg-green-900/30 text-green-200'
-                  : isSelected
-                    ? 'border-ocean-400 bg-ocean-600/60 text-ocean-50'
-                    : 'border-ocean-600 bg-ocean-700/50 text-ocean-200 hover:border-ocean-500'
-                }
-                ${disabled ? 'cursor-default' : 'cursor-pointer active:scale-98'}`}
-            >
-              {opt}
-            </button>
-          )
-        })}
-        {showCorrect && adminNote && (
-          <p className="text-sm text-ocean-300 italic mt-2">📝 {adminNote}</p>
+                }}
+                className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all font-medium
+                  ${isCorrect
+                    ? 'border-green-500 bg-green-900/30 text-green-200'
+                    : isSelected
+                      ? 'border-ocean-400 bg-ocean-600/60 text-ocean-50'
+                      : 'border-ocean-600 bg-ocean-700/50 text-ocean-200 hover:border-ocean-500'
+                  }
+                  ${disabled ? 'cursor-default' : 'cursor-pointer active:scale-98'}`}
+              >
+                {opt}
+              </button>
+            )
+          })}
+          {showCorrect && adminNote && (
+            <p className="text-sm text-ocean-300 italic mt-2">📝 {adminNote}</p>
+          )}
+        </div>
+      )
+    }
+
+    // Single-select — native dropdown for better mobile experience
+    return (
+      <div>
+        <select
+          disabled={disabled}
+          value={typeof selected === 'string' ? selected : ''}
+          onChange={e => onChange({ selected: e.target.value })}
+          className="input"
+        >
+          <option value="">Choose an answer...</option>
+          {options.map((opt, i) => (
+            <option key={i} value={opt}>{opt}</option>
+          ))}
+        </select>
+        {showCorrect && correctAnswer != null && (
+          <div className="mt-2 space-y-1">
+            <p className="text-sm text-green-300">✓ Correct: {String(correctAnswer)}</p>
+            {adminNote && <p className="text-sm text-ocean-300 italic">📝 {adminNote}</p>}
+          </div>
         )}
       </div>
     )
@@ -73,13 +87,13 @@ export function QuestionInput({ question, value, onChange, disabled, showCorrect
 
     return (
       <div>
-        <textarea
+        <input
+          type="text"
           disabled={disabled}
           value={text}
           onChange={e => onChange({ text: e.target.value })}
           placeholder="Type your answer here..."
-          rows={3}
-          className="input resize-none"
+          className="input"
         />
         {showCorrect && correctAnswer != null && (
           <div className="mt-2 space-y-1">

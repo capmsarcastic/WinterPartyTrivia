@@ -138,6 +138,8 @@ export interface Message {
   from_admin: boolean
   from_player_id: string | null
   from_player_name: string | null
+  from_team_id?: string | null
+  from_team_name?: string | null
   target_type: MessageTarget
   target_id: string | null
   body: string

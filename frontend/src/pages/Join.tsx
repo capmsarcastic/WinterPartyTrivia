@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { playerApi, publicApi } from '../lib/api'
 import { usePlayer } from '../contexts/PlayerContext'
@@ -7,6 +7,7 @@ import { useDeviceId } from '../hooks/useDeviceId'
 import { useToast } from '../contexts/ToastContext'
 import { TeamEmoji } from '../components/ImagePicker'
 import { STRINGS } from '../strings'
+import { getStoredPlayerName } from './Splash'
 import type { Team } from '../types'
 
 interface JoinFormProps {
@@ -19,16 +20,17 @@ function JoinForm({ team, onClose }: JoinFormProps) {
   const deviceId = useDeviceId()
   const { setSession } = usePlayer()
   const { showToast } = useToast()
-  const [name, setName] = useState('')
   const [passcode, setPasscode] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const storedName = getStoredPlayerName()
+
   async function handleJoin() {
-    if (!name.trim() || passcode.length !== 4) return
+    if (!storedName || passcode.length !== 4) return
     setLoading(true)
     try {
-      const res = await playerApi.joinTeam(deviceId, team.id, name.trim(), passcode) as { player: import('../types').Player; team: Team }
-      setSession(res.player, team)
+      const res = await playerApi.joinTeam(deviceId, team.id, storedName, passcode) as { player: import('../types').Player; team: Team }
+      setSession(res.player, res.team)
       navigate(`/team/${team.id}`)
     } catch (err: unknown) {
       showToast((err as Error).message || STRINGS.errors.generic, 'error')
@@ -50,17 +52,17 @@ function JoinForm({ team, onClose }: JoinFormProps) {
         </div>
 
         <div className="space-y-4">
-          <div>
-            <label className="label">{STRINGS.teamCreator.yourNameLabel}</label>
-            <input
-              className="input"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder={STRINGS.teamCreator.yourNamePlaceholder}
-              maxLength={30}
-              autoFocus
-            />
+          <div className="bg-ocean-700/50 rounded-lg px-4 py-3 text-sm text-ocean-200">
+            Joining as <span className="font-medium text-ocean-50">{storedName || '(no name set)'}</span>
+            {' · '}
+            <button
+              className="text-ocean-400 underline"
+              onClick={() => { onClose(); navigate('/') }}
+            >
+              {STRINGS.playerName.changeLink}
+            </button>
           </div>
+
           <div>
             <label className="label">{STRINGS.teamCreator.passcodeLabel}</label>
             <input
@@ -71,15 +73,21 @@ function JoinForm({ team, onClose }: JoinFormProps) {
               type="password"
               inputMode="numeric"
               maxLength={4}
+              autoFocus
             />
           </div>
           <button
             className="btn-primary w-full"
-            disabled={!name.trim() || passcode.length !== 4 || loading}
+            disabled={!storedName || passcode.length !== 4 || loading}
             onClick={handleJoin}
           >
             {loading ? 'Joining...' : 'Join team'}
           </button>
+          {!storedName && (
+            <p className="text-xs text-red-400 text-center">
+              Go back to the start to set your name first.
+            </p>
+          )}
         </div>
       </div>
     </div>
@@ -88,16 +96,22 @@ function JoinForm({ team, onClose }: JoinFormProps) {
 
 export default function Join() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [teams, setTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
   const [teamCreationEnabled, setTeamCreationEnabled] = useState(true)
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
 
+  // Persistent notification — sticks until replaced or navigated away
+  const [pageMessage, setPageMessage] = useState<string | null>(
+    () => location.state?.message ?? null
+  )
+
   async function loadData() {
     try {
       const [cfg, ts] = await Promise.all([publicApi.eventConfig(), publicApi.teams()])
       setTeamCreationEnabled(cfg.team_creation_enabled)
-      setTeams(ts.filter(t => t.status === 'approved'))
+      setTeams((ts as Team[]).filter((t: Team) => t.status === 'approved'))
     } catch {
       /* ignore */
     } finally {
@@ -108,7 +122,6 @@ export default function Join() {
   useEffect(() => {
     loadData()
 
-    // Subscribe to team changes (approvals) and event config changes
     const ch = supabase
       .channel('join-page')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'teams' }, () => loadData())
@@ -123,11 +136,24 @@ export default function Join() {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="px-5 pt-safe-top pt-6 pb-4">
-        <button onClick={() => navigate('/')} className="text-ocean-400 text-sm mb-3">← Back</button>
+        <button onClick={() => navigate('/')} className="text-ocean-400 text-sm mb-3">← Let's Go screen</button>
         <h1 className="font-heading text-2xl font-bold text-ocean-50">{STRINGS.join.heading}</h1>
       </header>
 
       <div className="flex-1 px-5 pb-6 overflow-y-auto">
+        {/* Persistent page notification */}
+        {pageMessage && (
+          <div className="mb-4 bg-ocean-700 border border-ocean-500 rounded-xl px-4 py-3 flex items-start gap-3">
+            <span className="text-ocean-300 text-sm flex-1">{pageMessage}</span>
+            <button
+              className="text-ocean-500 hover:text-ocean-300 shrink-0 text-xs"
+              onClick={() => setPageMessage(null)}
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {loading ? (
           <div className="flex items-center justify-center h-40 text-ocean-400">Loading...</div>
         ) : approvedTeams.length === 0 ? (

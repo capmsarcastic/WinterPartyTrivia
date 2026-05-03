@@ -72,6 +72,9 @@ export const playerApi = {
 
   heartbeat: (deviceId: string, playerId: string) =>
     request('/api/player/heartbeat', put({ player_id: playerId }), deviceId),
+
+  getPasscode: (deviceId: string, playerId: string) =>
+    request<{ passcode: string }>(`/api/player/team-passcode?player_id=${playerId}`, {}, deviceId),
 }
 
 // ---- Public API ----

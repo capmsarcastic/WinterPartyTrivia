@@ -21,6 +21,7 @@ export default function TeamManagement() {
   const [bonusTeamId, setBonusTeamId] = useState('')
   const [bonusPoints, setBonusPoints] = useState('')
   const [bonusNote, setBonusNote] = useState('')
+  const [bonusCategory, setBonusCategory] = useState<'Bonus' | 'Penalty' | 'Round Score'>('Bonus')
 
   async function load() {
     try {
@@ -72,9 +73,15 @@ export default function TeamManagement() {
   async function awardBonus() {
     if (!bonusTeamId || !bonusPoints || !bonusNote.trim()) return
     try {
-      await adminApi.createScoreEvent({ team_id: bonusTeamId, points: parseFloat(bonusPoints), note: bonusNote, category: 'bonus' })
+      await adminApi.createScoreEvent({
+        team_id: bonusTeamId,
+        points: parseFloat(bonusPoints),
+        note: bonusNote,
+        category: bonusCategory.toLowerCase().replace(' ', '_'),
+      })
       setBonusTeamId(''); setBonusPoints(''); setBonusNote('')
       showToast('Score event created.', 'success')
+      load()
     } catch (err: unknown) { showToast((err as Error).message, 'error') }
   }
 
@@ -87,13 +94,18 @@ export default function TeamManagement() {
       {/* Bonus points panel */}
       <div className="card space-y-3">
         <h2 className="font-heading font-bold text-ocean-200">Award / deduct points</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <select className="input text-sm col-span-2 md:col-span-1" value={bonusTeamId} onChange={e => setBonusTeamId(e.target.value)}>
             <option value="">Select team...</option>
             {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
           </select>
-          <input className="input text-sm" type="number" placeholder="Points (use − for deduction)" value={bonusPoints} onChange={e => setBonusPoints(e.target.value)} />
-          <input className="input text-sm col-span-2 md:col-span-1" placeholder="Reason / note" value={bonusNote} onChange={e => setBonusNote(e.target.value)} />
+          <select className="input text-sm" value={bonusCategory} onChange={e => setBonusCategory(e.target.value as typeof bonusCategory)}>
+            <option value="Bonus">Bonus</option>
+            <option value="Penalty">Penalty</option>
+            <option value="Round Score">Round Score</option>
+          </select>
+          <input className="input text-sm" type="number" placeholder="Points (−ve for deduction)" value={bonusPoints} onChange={e => setBonusPoints(e.target.value)} />
+          <input className="input text-sm" placeholder="Reason / note" value={bonusNote} onChange={e => setBonusNote(e.target.value)} />
           <button className="btn-primary btn-sm" onClick={awardBonus} disabled={!bonusTeamId || !bonusPoints || !bonusNote.trim()}>
             Award
           </button>

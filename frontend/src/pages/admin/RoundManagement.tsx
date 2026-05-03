@@ -41,6 +41,9 @@ function QuestionForm({ roundId, question, onSave, onCancel, defaultPoints }: Qu
   const [scoringMode, setScoringMode] = useState(
     (question?.input_config_json as { scoring_mode?: string })?.scoring_mode ?? 'exact'
   )
+  const [showPromptText, setShowPromptText] = useState(
+    (question?.input_config_json as { show_prompt_text?: boolean })?.show_prompt_text !== false
+  )
   const [saving, setSaving] = useState(false)
 
   async function handleSave() {
@@ -54,6 +57,7 @@ function QuestionForm({ roundId, question, onSave, onCancel, defaultPoints }: Qu
         inputConfig.scoring_mode = scoringMode
         inputConfig.decimal_places = 0
       }
+      inputConfig.show_prompt_text = showPromptText
 
       const payload = {
         prompt_text: promptText || null,
@@ -81,9 +85,13 @@ function QuestionForm({ roundId, question, onSave, onCancel, defaultPoints }: Qu
   return (
     <div className="bg-ocean-700 rounded-xl p-4 space-y-4">
       <div className="grid md:grid-cols-2 gap-4">
-        <div className="md:col-span-2">
+        <div className="md:col-span-2 space-y-2">
           <label className="label">Question text (optional if image provided)</label>
           <input className="input" value={promptText} onChange={e => setPromptText(e.target.value)} placeholder="e.g. What year was the company founded?" />
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={showPromptText} onChange={e => setShowPromptText(e.target.checked)} className="rounded" />
+            <span className="text-sm text-ocean-200">Show question text to players</span>
+          </label>
         </div>
         <div>
           <label className="label">Prompt image URL (optional)</label>

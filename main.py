@@ -1,6 +1,7 @@
 import csv
 import io
 import os
+import re
 import secrets
 import time
 from datetime import datetime, timedelta, timezone
@@ -109,6 +110,11 @@ def get_effective_points(question: dict) -> float:
     round_res = sb().table("rounds").select("points_per_correct").eq(
         "id", question["round_id"]).single().execute()
     return float(round_res.data["points_per_correct"])
+
+
+def normalize_team_name(s: str) -> str:
+    """Strip non-alphanumeric characters and lowercase for uniqueness comparison."""
+    return re.sub(r'[^a-z0-9]', '', s.lower())
 
 
 def auto_mark(question: dict, value_json: dict) -> Optional[float]:
@@ -395,14 +401,12 @@ async def player_join_team(req: JoinTeamRequest, request: Request):
     if not pc_res.data or pc_res.data["passcode"] != req.passcode:
         raise HTTPException(status_code=401, detail="Incorrect passcode.")
 
-    # Check display name uniqueness within team (case-insensitive)
+    # Check display name uniqueness globally (case-insensitive)
     name_clean = req.display_name.strip()
-    existing = sb().table("players").select("id").eq(
-        "team_id", req.team_id).eq("status", "active").execute()
-    for p in (existing.data or []):
-        p_res = sb().table("players").select("display_name").eq("id", p["id"]).single().execute()
-        if p_res.data and p_res.data["display_name"].strip().lower() == name_clean.lower():
-            raise HTTPException(status_code=409, detail="That name is already taken on this team.")
+    name_check = sb().table("players").select("id").eq(
+        "status", "active").ilike("display_name", name_clean).execute()
+    if name_check.data:
+        raise HTTPException(status_code=409, detail="That name is already taken. Please choose a different name.")
 
     # Deactivate any existing active player record for this device
     sb().table("players").update({"status": "left"}).eq(
@@ -419,7 +423,11 @@ async def player_join_team(req: JoinTeamRequest, request: Request):
 
     log_activity("player_joined", "player", player["id"], name_clean,
                  {"team_id": req.team_id, "team_name": team_res.data["name"]})
-    return {"player": player, "team": team_res.data}
+
+    # Include passcode in response so the team page can display it
+    team_data = dict(team_res.data)
+    team_data["passcode"] = pc_res.data["passcode"] if pc_res.data else None
+    return {"player": player, "team": team_data}
 
 
 @app.post("/api/player/create-team")
@@ -436,12 +444,13 @@ async def player_create_team(req: CreateTeamRequest, request: Request):
     if not req.passcode.isdigit() or len(req.passcode) != 4:
         raise HTTPException(status_code=400, detail="Passcode must be exactly 4 digits.")
 
-    # Check name uniqueness (case-insensitive) across pending + approved
+    # Check name uniqueness — normalised to letters+numbers only, so "team name" == "teamname"
     name_clean = req.name.strip()
+    normalized_new = normalize_team_name(name_clean)
     existing = sb().table("teams").select("name").in_(
         "status", ["pending", "approved"]).execute()
     for t in (existing.data or []):
-        if t["name"].strip().lower() == name_clean.lower():
+        if normalize_team_name(t["name"]) == normalized_new:
             raise HTTPException(status_code=409, detail="That team name is already taken.")
 
     # Create pending team
@@ -580,6 +589,31 @@ async def player_heartbeat(req: HeartbeatRequest, request: Request):
     return {"ok": True}
 
 
+@app.get("/api/player/team-passcode")
+async def player_get_team_passcode(request: Request):
+    """Return the current passcode for the player's team (player must be active member)."""
+    device_id = get_device_id(request)
+    player_id = request.query_params.get("player_id", "").strip()
+    if not player_id:
+        raise HTTPException(status_code=400, detail="player_id query param required.")
+
+    player_res = sb().table("players").select("team_id").eq(
+        "id", player_id).eq("device_id", device_id).eq("status", "active").single().execute()
+    if not player_res.data:
+        raise HTTPException(status_code=403, detail="Not authenticated.")
+
+    team_id = player_res.data["team_id"]
+    if not team_id:
+        raise HTTPException(status_code=404, detail="Player is not on a team.")
+
+    pc = sb().table("team_passcodes").select("passcode").eq(
+        "team_id", team_id).single().execute()
+    if not pc.data:
+        raise HTTPException(status_code=404, detail="Passcode not found.")
+
+    return {"passcode": pc.data["passcode"]}
+
+
 @app.get("/api/player/session")
 async def player_session(request: Request):
     """Return the active player record for this device, if any."""
@@ -693,7 +727,24 @@ async def admin_message_player(req: PlayerMessageAdminRequest,
 async def admin_get_messages(admin_session: Optional[str] = Cookie(default=None)):
     require_admin(admin_session)
     res = sb().table("messages").select("*").order("sent_at", desc=True).limit(200).execute()
-    return res.data
+    msgs = res.data or []
+
+    # Enrich player messages with team info
+    for msg in msgs:
+        if not msg.get("from_admin") and msg.get("from_player_id"):
+            try:
+                p = sb().table("players").select("team_id").eq(
+                    "id", msg["from_player_id"]).single().execute()
+                if p.data and p.data.get("team_id"):
+                    t = sb().table("teams").select("id, name").eq(
+                        "id", p.data["team_id"]).single().execute()
+                    if t.data:
+                        msg["from_team_id"] = t.data["id"]
+                        msg["from_team_name"] = t.data["name"]
+            except Exception:
+                pass
+
+    return msgs
 
 
 @app.patch("/api/admin/messages/{message_id}/read")

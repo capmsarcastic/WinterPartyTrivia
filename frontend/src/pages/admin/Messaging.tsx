@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { adminApi } from '../../lib/api'
 import { useToast } from '../../contexts/ToastContext'
 import type { Message, Team } from '../../types'
 
-type SendMode = 'broadcast' | 'team' | 'player'
+type SendMode = 'broadcast' | 'team'
 
 function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })
@@ -19,6 +19,8 @@ export default function Messaging() {
   const [body, setBody] = useState('')
   const [sending, setSending] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [filterTeamId, setFilterTeamId] = useState('')
+  const composeRef = useRef<HTMLTextAreaElement>(null)
 
   async function loadMessages() {
     const [msgs, ts] = await Promise.all([adminApi.getMessages(), adminApi.getTeams()])
@@ -59,8 +61,27 @@ export default function Messaging() {
     loadMessages()
   }
 
+  function handleQuickReply(teamId: string) {
+    setMode('team')
+    setTargetTeamId(teamId)
+    setTimeout(() => composeRef.current?.focus(), 50)
+  }
+
   const playerMessages = messages.filter(m => m.target_type === 'admin')
   const sentMessages = messages.filter(m => m.from_admin)
+
+  // Teams that have actually sent messages — for filter dropdown
+  const messagingTeams = Array.from(
+    new Map(
+      playerMessages
+        .filter(m => m.from_team_id)
+        .map(m => [m.from_team_id, { id: m.from_team_id!, name: m.from_team_name ?? 'Unknown team' }])
+    ).values()
+  )
+
+  const filteredPlayerMessages = filterTeamId
+    ? playerMessages.filter(m => m.from_team_id === filterTeamId)
+    : playerMessages
 
   return (
     <div className="p-5 max-w-3xl mx-auto space-y-6">
@@ -92,6 +113,7 @@ export default function Messaging() {
         )}
 
         <textarea
+          ref={composeRef}
           className="input resize-none"
           rows={3}
           value={body}
@@ -111,35 +133,65 @@ export default function Messaging() {
       <div className="grid md:grid-cols-2 gap-5">
         {/* Messages from players */}
         <div className="card">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
             <h2 className="font-heading font-bold text-ocean-200">
               From players
               {unreadCount > 0 && (
                 <span className="ml-2 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">{unreadCount}</span>
               )}
             </h2>
-            <button className="btn-ghost btn-sm text-xs" onClick={loadMessages}>↻</button>
+            <div className="flex items-center gap-2">
+              {messagingTeams.length > 0 && (
+                <select
+                  className="text-xs bg-ocean-700 border border-ocean-600 rounded-lg px-2 py-1 text-ocean-200"
+                  value={filterTeamId}
+                  onChange={e => setFilterTeamId(e.target.value)}
+                >
+                  <option value="">All teams</option>
+                  {messagingTeams.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              )}
+              <button className="btn-ghost btn-sm text-xs" onClick={loadMessages}>↻</button>
+            </div>
           </div>
-          {playerMessages.length === 0 ? (
+          {filteredPlayerMessages.length === 0 ? (
             <p className="text-ocean-500 text-sm">No messages from players.</p>
           ) : (
             <div className="space-y-3 max-h-80 overflow-y-auto">
-              {playerMessages.map(m => (
+              {filteredPlayerMessages.map(m => (
                 <div
                   key={m.id}
                   className={`rounded-lg p-3 ${m.is_read ? 'bg-ocean-700/40' : 'bg-ocean-600/50 border border-ocean-500/50'}`}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="text-xs text-ocean-400 font-medium">
-                      {m.from_player_name || 'Unknown'} · {formatTime(m.sent_at)}
-                    </p>
-                    {!m.is_read && (
-                      <button className="text-xs text-ocean-400 hover:text-ocean-200 shrink-0" onClick={() => markRead(m.id)}>
-                        Mark read
-                      </button>
-                    )}
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <div>
+                      <p className="text-xs text-ocean-400 font-medium">
+                        {m.from_player_name || 'Unknown'}
+                        {m.from_team_name && (
+                          <span className="ml-1 text-ocean-500">· {m.from_team_name}</span>
+                        )}
+                        <span className="ml-1 text-ocean-600">· {formatTime(m.sent_at)}</span>
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {m.from_team_id && (
+                        <button
+                          className="text-xs text-ocean-300 hover:text-ocean-100 bg-ocean-600/50 rounded px-2 py-0.5"
+                          onClick={() => handleQuickReply(m.from_team_id!)}
+                        >
+                          Reply →
+                        </button>
+                      )}
+                      {!m.is_read && (
+                        <button className="text-xs text-ocean-400 hover:text-ocean-200" onClick={() => markRead(m.id)}>
+                          Mark read
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-sm text-ocean-100 mt-1">{m.body}</p>
+                  <p className="text-sm text-ocean-100">{m.body}</p>
                 </div>
               ))}
             </div>

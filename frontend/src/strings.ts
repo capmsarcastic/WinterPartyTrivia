@@ -13,6 +13,15 @@ export const STRINGS = {
     cta: "Let's go",
   },
 
+  playerName: {
+    label: 'Your name',
+    placeholder: "What do your colleagues call you?",
+    checking: 'Checking availability...',
+    taken: 'That name is already taken.',
+    available: '✓ Name available!',
+    changeLink: 'change name',
+  },
+
   join: {
     heading: 'Pick your team',
     createButton: '+ Create a new team',
