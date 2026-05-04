@@ -10,6 +10,17 @@ import { STRINGS } from '../strings'
 import { getStoredPlayerName } from './Splash'
 import type { Team } from '../types'
 
+type PageMessage = {
+  variant: 'info' | 'error'
+  title: string
+  body?: string
+}
+
+type JoinLocationState = {
+  message?: string
+  pageMessage?: PageMessage
+}
+
 interface JoinFormProps {
   team: Team
   onClose: () => void
@@ -96,15 +107,18 @@ function JoinForm({ team, onClose }: JoinFormProps) {
 
 export default function Join() {
   const navigate = useNavigate()
-  const location = useLocation()
+  const location = useLocation<JoinLocationState>()
   const [teams, setTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
   const [teamCreationEnabled, setTeamCreationEnabled] = useState(true)
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
 
   // Persistent notification — sticks until replaced or navigated away
-  const [pageMessage, setPageMessage] = useState<string | null>(
-    () => location.state?.message ?? null
+  const [pageMessage, setPageMessage] = useState<string | PageMessage | null>(
+    () => {
+      const state = location.state as JoinLocationState | null
+      return state?.pageMessage ?? state?.message ?? null
+    }
   )
 
   async function loadData() {
@@ -143,10 +157,34 @@ export default function Join() {
       <div className="flex-1 px-5 pb-6 overflow-y-auto">
         {/* Persistent page notification */}
         {pageMessage && (
-          <div className="mb-4 bg-ocean-700 border border-ocean-500 rounded-xl px-4 py-3 flex items-start gap-3">
-            <span className="text-ocean-300 text-sm flex-1">{pageMessage}</span>
+          <div
+            className={
+              typeof pageMessage === 'string'
+                ? 'mb-4 bg-ocean-700 border border-ocean-500 rounded-xl px-4 py-3 flex items-start gap-3'
+                : 'mb-4 bg-red-950 border border-red-700 rounded-xl px-4 py-3 flex items-start gap-3'
+            }
+          >
+            <div className="flex-1 text-sm text-left">
+              {typeof pageMessage === 'string' ? (
+                <span className="text-ocean-300">{pageMessage}</span>
+              ) : (
+                <>
+                  <p className="font-semibold text-red-100 flex items-center gap-2 mb-1">
+                    <span>✕</span>
+                    {pageMessage.title}
+                  </p>
+                  {pageMessage.body && (
+                    <p className="text-red-200 whitespace-pre-line">{pageMessage.body}</p>
+                  )}
+                </>
+              )}
+            </div>
             <button
-              className="text-ocean-500 hover:text-ocean-300 shrink-0 text-xs"
+              className={
+                typeof pageMessage === 'string'
+                  ? 'text-ocean-500 hover:text-ocean-300 shrink-0 text-xs'
+                  : 'text-red-300 hover:text-red-100 shrink-0 text-xs'
+              }
               onClick={() => setPageMessage(null)}
             >
               ✕

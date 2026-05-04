@@ -42,8 +42,17 @@ export default function PendingApproval() {
       }
     } else if (status === 'deleted' || status === 'not_found') {
       handledRef.current = true
-      const msg = rejectionMessage || 'Your team was not approved.'
-      navigate('/join', { replace: true, state: { message: msg } })
+      const msg = rejectionMessage || STRINGS.pending.rejectedFallback
+      navigate('/join', {
+        replace: true,
+        state: {
+          pageMessage: {
+            variant: 'error',
+            title: STRINGS.pending.rejectedHeading,
+            body: msg,
+          },
+        },
+      })
     }
   }
 

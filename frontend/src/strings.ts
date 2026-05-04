@@ -52,6 +52,8 @@ export const STRINGS = {
     joiningMessage: 'Joining your team...',
     waitMessage: "You'll be taken straight in.",
     approvedMessage: 'Your team was approved! Join now.',
+    rejectedHeading: 'TEAM NOT APPROVED',
+    rejectedFallback: 'Team creation has been closed for the night, sorry.',
   },
 
   rejection: {

@@ -117,6 +117,11 @@ def normalize_team_name(s: str) -> str:
     return re.sub(r'[^a-z0-9]', '', s.lower())
 
 
+def normalize_player_name(s: str) -> str:
+    """Strip non-alphanumeric characters and lowercase for player name uniqueness."""
+    return re.sub(r'[^a-z0-9]', '', s.lower())
+
+
 def auto_mark(question: dict, value_json: dict) -> Optional[float]:
     """Return points for auto-markable types, or None for manual marking."""
     itype = question["input_type"]
@@ -386,8 +391,9 @@ async def public_check_name(name: str = ""):
     name_clean = name.strip()
     if not name_clean:
         return {"available": False}
+    normalized_query = normalize_player_name(name_clean)
     active = sb().table("players").select("display_name").eq("status", "active").execute()
-    taken = any(p["display_name"].lower() == name_clean.lower() for p in (active.data or []))
+    taken = any(normalize_player_name(p["display_name"]) == normalized_query for p in (active.data or []))
     return {"available": not taken}
 
 
@@ -420,10 +426,11 @@ async def player_join_team(req: JoinTeamRequest, request: Request):
     if not pc_res.data or pc_res.data["passcode"] != req.passcode:
         raise HTTPException(status_code=401, detail="Incorrect passcode.")
 
-    # Check display name uniqueness globally (case-insensitive, Python-side comparison)
+    # Check display name uniqueness globally (normalize spaces/special characters and lowercase)
     name_clean = req.display_name.strip()
+    normalized_new = normalize_player_name(name_clean)
     active_players = sb().table("players").select("display_name").eq("status", "active").execute()
-    if any(p["display_name"].lower() == name_clean.lower() for p in (active_players.data or [])):
+    if any(normalize_player_name(p["display_name"]) == normalized_new for p in (active_players.data or [])):
         raise HTTPException(status_code=409, detail="That name is already taken. Please choose a different name.")
 
     # Deactivate any existing active player record for this device
