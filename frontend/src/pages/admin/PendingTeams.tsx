@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { adminApi } from '../../lib/api'
 import { useToast } from '../../contexts/ToastContext'
 import { TeamEmoji } from '../../components/ImagePicker'
+import { STRINGS } from '../../strings'
 import type { Team } from '../../types'
 
 export default function PendingTeams() {

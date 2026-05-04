@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { adminApi } from '../../lib/api'
+import { STRINGS } from '../../strings'
 import type { ActivityLogEntry } from '../../types'
 
 const EVENT_ICONS: Record<string, string> = {

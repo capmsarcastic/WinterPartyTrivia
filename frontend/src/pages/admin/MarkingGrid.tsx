@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { adminApi } from '../../lib/api'
 import { useToast } from '../../contexts/ToastContext'
 import { TeamEmoji } from '../../components/ImagePicker'
+import { STRINGS } from '../../strings'
 import type { Question, Round } from '../../types'
 
 interface TeamAnswers {

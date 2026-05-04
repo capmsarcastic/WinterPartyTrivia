@@ -3,6 +3,7 @@ import { adminApi } from '../../lib/api'
 import { useToast } from '../../contexts/ToastContext'
 import { TeamEmoji } from '../../components/ImagePicker'
 import { ImagePicker } from '../../components/ImagePicker'
+import { STRINGS } from '../../strings'
 import type { Player, Team } from '../../types'
 
 interface EditState {

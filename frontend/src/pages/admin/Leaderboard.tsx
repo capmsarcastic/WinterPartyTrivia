@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { adminApi } from '../../lib/api'
 import { useToast } from '../../contexts/ToastContext'
 import { TeamEmoji } from '../../components/ImagePicker'
+import { STRINGS } from '../../strings'
 
 interface LeaderboardEntry {
   rank: number
