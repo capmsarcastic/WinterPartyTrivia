@@ -130,7 +130,7 @@ export function QuestionInput({ question, value, onChange, disabled, showCorrect
         {showCorrect && correctAnswer != null && (
           <div className="mt-2 space-y-1">
             <p className="text-sm text-green-300">
-              Correct Answer: {String(correctAnswer)}{config.unit_label ? ` ${config.unit_label}` : ''}
+              ✓ Correct: {String(correctAnswer)}{config.unit_label ? ` ${config.unit_label}` : ''}
             </p>
             {adminNote && <p className="text-sm text-ocean-300 italic">📝 {adminNote}</p>}
           </div>

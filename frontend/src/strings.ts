@@ -1,21 +1,21 @@
 // ============================================================
-// Configurable strings
+// Configurable strings — edit here to inject your personality
 // All player-facing text uses Australian English.
 // ============================================================
 
 export const STRINGS = {
-  appName: 'Winter Party Trivia',
-  appSubtitle: 'Before you ask: yes, Stephen has enough work to do',
+  appName: 'Winter Trivia Night',
+  appSubtitle: 'The Deep End of Knowledge',
 
   splash: {
-    heading: '🐋 Winter Party Trivia',
-    subheading: "Easy-peasy 'Ume data lemon'-squeezy",
+    heading: '🐋 Winter Trivia Night',
+    subheading: 'How well do you really know your colleagues?',
     cta: "Let's go",
   },
 
   playerName: {
-    label: 'Pick a display name',
-    placeholder: "Keep it work-appropriate, please.",
+    label: 'Your name',
+    placeholder: "What do your colleagues call you?",
     checking: 'Checking availability...',
     taken: 'That name is already taken.',
     available: '✓ Name available!',
@@ -26,19 +26,19 @@ export const STRINGS = {
     heading: 'Pick your team',
     createButton: '+ Create a new team',
     teamCreationClosed: "Team creation is closed for the night.",
-    noTeamsYet: "No teams yet. Make one by clicking below 👇",
+    noTeamsYet: "No teams yet — back to the bar 🍺",
     memberCount: (n: number) => n === 1 ? '1 member' : `${n} members`,
   },
 
   teamCreator: {
     heading: 'Start a new team',
-    namePlaceholder: 'Pick an amusing but work-safe team name:',
+    namePlaceholder: 'Your legendary team name...',
     nameLabel: 'Team name',
     imageLabel: 'Team vibe',
-    passcodeLabel: 'Secret passcode (4 digit number)',
+    passcodeLabel: 'Secret passcode (4 digits)',
     passcodePlaceholder: '••••',
     yourNameLabel: 'Your name',
-    yourNamePlaceholder: 'Keep it work-appropriate, please',
+    yourNamePlaceholder: 'What do your colleagues call you?',
     submitButton: 'Submit for approval',
     nameCheckingMessage: 'Checking availability...',
     nameTakenMessage: 'That name is taken. Try something else.',
@@ -46,13 +46,13 @@ export const STRINGS = {
   },
 
   pending: {
-    heading: 'Waiting for Stephen to approve...',
-    subheading: 'Sit tight. Try shouting "HURRY UP"; it might help.',
+    heading: 'Waiting for the admin...',
+    subheading: "Sit tight while your team gets approved.",
     cancelButton: 'Cancel',
   },
 
   rejection: {
-    heading: "Oof, Stephen rejected the team, sorry.",
+    heading: "No dice, sorry.",
     backButton: 'Back to the join screen',
   },
 

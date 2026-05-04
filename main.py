@@ -381,6 +381,25 @@ async def public_image_presets():
     return res.data
 
 
+@app.get("/api/public/check-name")
+async def public_check_name(name: str = ""):
+    name_clean = name.strip()
+    if not name_clean:
+        return {"available": False}
+    active = sb().table("players").select("display_name").eq("status", "active").execute()
+    taken = any(p["display_name"].lower() == name_clean.lower() for p in (active.data or []))
+    return {"available": not taken}
+
+
+@app.get("/api/public/team-status/{team_id}")
+async def public_team_status(team_id: str):
+    res = sb().table("teams").select("id, status, rejection_message").eq(
+        "id", team_id).single().execute()
+    if not res.data:
+        return {"status": "not_found", "rejection_message": None}
+    return {"status": res.data["status"], "rejection_message": res.data.get("rejection_message")}
+
+
 # ============================================================
 # PLAYER ENDPOINTS  (X-Device-ID header required)
 # ============================================================
@@ -401,11 +420,10 @@ async def player_join_team(req: JoinTeamRequest, request: Request):
     if not pc_res.data or pc_res.data["passcode"] != req.passcode:
         raise HTTPException(status_code=401, detail="Incorrect passcode.")
 
-    # Check display name uniqueness globally (case-insensitive)
+    # Check display name uniqueness globally (case-insensitive, Python-side comparison)
     name_clean = req.display_name.strip()
-    name_check = sb().table("players").select("id").eq(
-        "status", "active").ilike("display_name", name_clean).execute()
-    if name_check.data:
+    active_players = sb().table("players").select("display_name").eq("status", "active").execute()
+    if any(p["display_name"].lower() == name_clean.lower() for p in (active_players.data or [])):
         raise HTTPException(status_code=409, detail="That name is already taken. Please choose a different name.")
 
     # Deactivate any existing active player record for this device

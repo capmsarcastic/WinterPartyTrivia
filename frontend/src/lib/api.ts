@@ -83,6 +83,10 @@ export const publicApi = {
   eventConfig: () => request<import('../types').EventConfig>('/api/public/event-config'),
   teams: () => request<import('../types').Team[]>('/api/public/teams'),
   imagePresets: () => request<import('../types').ImagePreset[]>('/api/public/image-presets'),
+  checkName: (name: string) =>
+    request<{ available: boolean }>(`/api/public/check-name?name=${encodeURIComponent(name)}`),
+  teamStatus: (teamId: string) =>
+    request<{ status: string; rejection_message: string | null }>(`/api/public/team-status/${teamId}`),
 }
 
 // ---- Admin API ----

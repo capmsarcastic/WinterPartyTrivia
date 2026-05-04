@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePlayer } from '../contexts/PlayerContext'
-import { supabase } from '../lib/supabase'
+import { publicApi } from '../lib/api'
 import { STRINGS } from '../strings'
 
 type NameStatus = 'idle' | 'checking' | 'available' | 'taken'
@@ -27,18 +27,18 @@ export default function Splash() {
     }
   }, [])
 
-  // Real-time name uniqueness check against all active players
+  // Name availability check via backend (service role — not blocked by RLS)
   useEffect(() => {
     if (!name.trim()) { setNameStatus('idle'); return }
     if (checkTimer.current) clearTimeout(checkTimer.current)
     setNameStatus('checking')
     checkTimer.current = setTimeout(async () => {
-      const res = await supabase
-        .from('players')
-        .select('id')
-        .eq('status', 'active')
-        .ilike('display_name', name.trim())
-      setNameStatus(!res.data || res.data.length === 0 ? 'available' : 'taken')
+      try {
+        const res = await publicApi.checkName(name.trim())
+        setNameStatus(res.available ? 'available' : 'taken')
+      } catch {
+        setNameStatus('idle')
+      }
     }, 400)
     return () => { if (checkTimer.current) clearTimeout(checkTimer.current) }
   }, [name])
