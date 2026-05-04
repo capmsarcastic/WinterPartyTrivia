@@ -107,7 +107,7 @@ function JoinForm({ team, onClose }: JoinFormProps) {
 
 export default function Join() {
   const navigate = useNavigate()
-  const location = useLocation<JoinLocationState>()
+  const location = useLocation()
   const [teams, setTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
   const [teamCreationEnabled, setTeamCreationEnabled] = useState(true)
