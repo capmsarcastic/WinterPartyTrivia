@@ -33,12 +33,12 @@ export default function PendingApproval() {
           setSession(res.player, res.team)
           navigate(`/team/${team.id}`, { replace: true })
         } catch {
-          navigate('/join', { replace: true, state: { message: 'Your team was approved! Join now.' } })
+          navigate('/join', { replace: true, state: { message: STRINGS.pending.approvedMessage } })
         } finally {
           setAutoJoining(false)
         }
       } else {
-        navigate('/join', { replace: true, state: { message: 'Your team was approved! Join now.' } })
+        navigate('/join', { replace: true, state: { message: STRINGS.pending.approvedMessage } })
       }
     } else if (status === 'deleted' || status === 'not_found') {
       handledRef.current = true
@@ -78,10 +78,10 @@ export default function PendingApproval() {
         {autoJoining ? '🎉' : '⏳'}
       </div>
       <h1 className="font-heading text-2xl font-bold text-ocean-50 mb-2">
-        {autoJoining ? 'Joining your team...' : STRINGS.pending.heading}
+        {autoJoining ? STRINGS.pending.joiningMessage : STRINGS.pending.heading}
       </h1>
-      <p className="text-ocean-300 mb-2">
-        {autoJoining ? "You'll be taken straight in." : STRINGS.pending.subheading}
+      <p className="text-ocean-300 mb-6">
+        {autoJoining ? STRINGS.pending.waitMessage : STRINGS.pending.subheading}
       </p>
       {team && !autoJoining && (
         <p className="text-ocean-400 text-sm mb-8">Team: <span className="text-ocean-200 font-medium">{team.name}</span></p>

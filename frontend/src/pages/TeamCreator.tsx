@@ -123,7 +123,7 @@ export default function TeamCreator() {
             className="input tracking-widest text-center text-2xl max-w-32 font-mono"
             value={passcode}
             onChange={e => setPasscode(e.target.value.replace(/\D/g, '').slice(0, 4))}
-            placeholder="1234"
+            placeholder="••••"
             inputMode="numeric"
             maxLength={4}
           />

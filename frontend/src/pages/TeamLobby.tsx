@@ -162,7 +162,7 @@ export default function TeamLobby() {
       if (passcodeTimerRef.current) clearTimeout(passcodeTimerRef.current)
       passcodeTimerRef.current = setTimeout(() => setPasscodeVisible(false), 5000)
     } catch {
-      showToast('Could not fetch passcode.', 'error')
+      showToast(STRINGS.lobby.passcodeError, 'error')
     } finally {
       setPasscodeLoading(false)
     }
@@ -172,7 +172,7 @@ export default function TeamLobby() {
     if (!player || !team || !window.confirm(STRINGS.lobby.bootConfirm(targetPlayer.display_name))) return
     try {
       const res = await playerApi.bootMember(deviceId, team.id, player.id, targetPlayer.id) as { new_passcode: string }
-      showToast(`${targetPlayer.display_name} has been removed. New passcode: ${res.new_passcode}`, 'success')
+      showToast(STRINGS.lobby.bootedMessage(targetPlayer.display_name, res.new_passcode), 'success')
       setPasscode(res.new_passcode)
       loadData()
     } catch (err: unknown) {
@@ -192,7 +192,7 @@ export default function TeamLobby() {
     await playerApi.sendMessage(deviceId, player.id, player.display_name, messageText.trim())
     setMessageText('')
     setShowMessageForm(false)
-    showToast('Message sent!', 'success')
+    showToast(STRINGS.lobby.messageSent, 'success')
   }
 
   if (!player || !team) return null
@@ -223,7 +223,7 @@ export default function TeamLobby() {
             disabled={passcodeLoading}
           >
             <span className="text-sm text-ocean-300">
-              {passcodeLoading ? 'Loading...' : STRINGS.lobby.passcodeReveal}
+              {passcodeLoading ? STRINGS.lobby.passcodeLoading : STRINGS.lobby.passcodeReveal}
               {passcodeVisible && <span className="ml-2 text-xs text-ocean-500">(hides in 5s)</span>}
             </span>
             {passcodeVisible && passcode

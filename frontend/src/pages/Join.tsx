@@ -81,11 +81,11 @@ function JoinForm({ team, onClose }: JoinFormProps) {
             disabled={!storedName || passcode.length !== 4 || loading}
             onClick={handleJoin}
           >
-            {loading ? 'Joining...' : 'Join team'}
+            {loading ? STRINGS.join.joiningButton : STRINGS.join.joinButton}
           </button>
           {!storedName && (
             <p className="text-xs text-red-400 text-center">
-              Go back to the start to set your name first.
+              {STRINGS.join.missingNameWarning}
             </p>
           )}
         </div>
@@ -155,7 +155,7 @@ export default function Join() {
         )}
 
         {loading ? (
-          <div className="flex items-center justify-center h-40 text-ocean-400">Loading...</div>
+          <div className="flex items-center justify-center h-40 text-ocean-400">{STRINGS.join.loading}</div>
         ) : approvedTeams.length === 0 ? (
           <p className="text-ocean-400 text-center py-12">{STRINGS.join.noTeamsYet}</p>
         ) : (

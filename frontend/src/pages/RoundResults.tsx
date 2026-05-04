@@ -54,7 +54,7 @@ export default function RoundResults() {
   }, [roundId, teamId])
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center text-ocean-400">Loading...</div>
+    <div className="min-h-screen flex items-center justify-center text-ocean-400">{STRINGS.roundResults.loading}</div>
   )
   if (!round) return null
 

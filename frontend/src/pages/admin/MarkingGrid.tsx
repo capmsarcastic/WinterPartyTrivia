@@ -144,7 +144,7 @@ export default function MarkingGrid() {
     } catch (err: unknown) { showToast((err as Error).message, 'error') }
   }
 
-  if (!round) return <div className="p-5 text-ocean-400">Loading...</div>
+  if (!round) return <div className="p-5 text-ocean-400">{STRINGS.admin.loading}</div>
 
   return (
     <div className="p-5 max-w-full">

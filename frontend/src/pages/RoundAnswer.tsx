@@ -126,7 +126,7 @@ export default function RoundAnswer() {
   const isLocked = round?.lifecycle_state !== 'open'
 
   if (!round || !player) return (
-    <div className="min-h-screen flex items-center justify-center text-ocean-400">Loading...</div>
+    <div className="min-h-screen flex items-center justify-center text-ocean-400">{STRINGS.roundAnswer.loading}</div>
   )
 
   return (

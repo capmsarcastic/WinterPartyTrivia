@@ -55,7 +55,7 @@ export default function ActivityLog() {
       )
     : entries
 
-  if (loading) return <div className="p-5 text-ocean-400">Loading...</div>
+  if (loading) return <div className="p-5 text-ocean-400">{STRINGS.admin.loading}</div>
 
   return (
     <div className="p-5 max-w-3xl mx-auto">

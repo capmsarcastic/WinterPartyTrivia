@@ -52,7 +52,7 @@ export default function Leaderboard() {
     }
   }
 
-  if (loading) return <div className="p-5 text-ocean-400">Loading...</div>
+  if (loading) return <div className="p-5 text-ocean-400">{STRINGS.admin.loading}</div>
 
   const categories = entries.length > 0
     ? Array.from(new Set(entries.flatMap(e => Object.keys(e.breakdown))))

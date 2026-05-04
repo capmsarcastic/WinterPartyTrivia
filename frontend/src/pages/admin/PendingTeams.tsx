@@ -44,7 +44,7 @@ export default function PendingTeams() {
     } catch (err: unknown) { showToast((err as Error).message, 'error') }
   }
 
-  if (loading) return <div className="p-5 text-ocean-400">Loading...</div>
+  if (loading) return <div className="p-5 text-ocean-400">{STRINGS.admin.loading}</div>
 
   return (
     <div className="p-5 max-w-2xl mx-auto">
