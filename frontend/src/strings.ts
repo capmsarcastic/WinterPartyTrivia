@@ -4,18 +4,17 @@
 // ============================================================
 
 export const STRINGS = {
-  appName: 'Winter Trivia Night',
-  appSubtitle: 'The Deep End of Knowledge',
+  appName: 'Winter Party Trivia',
 
   splash: {
-    heading: '🐋 Winter Trivia Night',
-    subheading: 'How well do you really know your colleagues?',
-    cta: "Let's go",
+    heading: '🐋 Winter Party Trivia',
+    subheading: "Easy peasey 'Ume data' squeezy",
+    cta: "Let's go!",
   },
 
   playerName: {
     label: 'Your name',
-    placeholder: "What do your colleagues call you?",
+    placeholder: "Keep this work appropriate, please",
     checking: 'Checking availability...',
     taken: 'That name is already taken.',
     available: '✓ Name available!',
@@ -26,19 +25,20 @@ export const STRINGS = {
     heading: 'Pick your team',
     createButton: '+ Create a new team',
     teamCreationClosed: "Team creation is closed for the night.",
-    noTeamsYet: "No teams yet — back to the bar 🍺",
+    noTeamsYet: "No teams yet. Create one below 👇",
     memberCount: (n: number) => n === 1 ? '1 member' : `${n} members`,
+    joinButton: 'Join team',
+    joiningButton: 'Joining...',
+    missingNameWarning: 'Go back to the start to set your name first.',
+    loading: 'Loading...',
   },
 
   teamCreator: {
     heading: 'Start a new team',
-    namePlaceholder: 'Your legendary team name...',
+    namePlaceholder: 'Extra points for funny team names',
     nameLabel: 'Team name',
     imageLabel: 'Team vibe',
-    passcodeLabel: 'Secret passcode (4 digits)',
-    passcodePlaceholder: '••••',
-    yourNameLabel: 'Your name',
-    yourNamePlaceholder: 'What do your colleagues call you?',
+    passcodeLabel: 'Secret passcode (4 digit number)',
     submitButton: 'Submit for approval',
     nameCheckingMessage: 'Checking availability...',
     nameTakenMessage: 'That name is taken. Try something else.',
@@ -46,13 +46,16 @@ export const STRINGS = {
   },
 
   pending: {
-    heading: 'Waiting for the admin...',
-    subheading: "Sit tight while your team gets approved.",
+    heading: 'Waiting for Stephen to approve...',
+    subheading: "ℹ️ Tip: shouting HURRY UP may make this part go faster.",
     cancelButton: 'Cancel',
+    joiningMessage: 'Joining your team...',
+    waitMessage: "You'll be taken straight in.",
+    approvedMessage: 'Your team was approved! Join now.',
   },
 
   rejection: {
-    heading: "No dice, sorry.",
+    heading: "REJECTED (sorry)",
     backButton: 'Back to the join screen',
   },
 
@@ -75,9 +78,12 @@ export const STRINGS = {
       revealed: '✅ Results available',
     } as Record<string, string>,
     viewResults: 'View results →',
-    soundToggle: 'Sounds',
     leaveTeam: 'Leave team',
     leaveConfirm: 'Leave your team? You can rejoin with the passcode.',
+    passcodeError: 'Could not fetch passcode.',
+    messageSent: 'Message sent!',
+    passcodeLoading: 'Loading...',
+    bootedMessage: (name: string, code: string) => `${name} has been removed. New passcode: ${code}`,
   },
 
   roundAnswer: {
@@ -85,16 +91,15 @@ export const STRINGS = {
     lastEdited: (name: string) => `Last edited by ${name}`,
     lockedBanner: '🔒 Round is locked — no more edits.',
     submitHint: 'Answers save automatically.',
-    numericUnit: (unit: string) => unit,
+    loading: 'Loading...',
   },
 
   roundResults: {
     heading: 'Your results',
-    correctLabel: 'Correct answer',
     yourAnswerLabel: 'Your answer',
-    pointsLabel: 'Points',
     backButton: '← Back to lobby',
     totalLabel: 'Round total',
+    loading: 'Loading...',
   },
 
   messages: {
@@ -105,10 +110,10 @@ export const STRINGS = {
   },
 
   loading: [
-    'Consulting the deep...',
-    'Asking the whale...',
-    'Diving deeper...',
-    'Counting bubbles...',
+    'Waving at Tyson...',
+    'Checking if Avalon is free...',
+    'Forgetting to book a desk...',
+    'Picking pineapple off pizza...',
     'Almost there...',
   ],
 
@@ -117,14 +122,15 @@ export const STRINGS = {
     networkError: 'Connection lost. Reconnecting...',
     passcodeWrong: 'Wrong passcode. Try again.',
     nameTaken: 'That name is already taken on this team.',
-    teamFull: 'Could not join team.',
   },
 
   reconnecting: 'Reconnecting...',
-  connected: 'Connected',
+
+  admin: {
+    loading: 'Loading...',
+  },
 }
 
 export function randomLoadingMessage(): string {
-  const msgs = STRINGS.loading
-  return msgs[Math.floor(Math.random() * msgs.length)]
+  return STRINGS.loading[Math.floor(Math.random() * STRINGS.loading.length)]
 }
