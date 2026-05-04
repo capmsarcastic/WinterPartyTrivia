@@ -30,7 +30,7 @@ export default function AdminLogin() {
         <div className="text-center mb-8">
           <div className="text-6xl mb-3">🎛️</div>
           <h1 className="font-heading text-2xl font-bold text-ocean-50">Admin</h1>
-          <p className="text-ocean-400 text-sm mt-1">Winter Trivia Night control panel</p>
+          <p className="text-ocean-400 text-sm mt-1">Winter Party Trivia control panel</p>
         </div>
 
         <form onSubmit={handleLogin} className="card space-y-4">

@@ -89,7 +89,7 @@ export default function AdminLayout() {
       <aside className="hidden md:flex flex-col w-56 bg-ocean-800 border-r border-ocean-700 shrink-0">
         <div className="px-4 py-5 border-b border-ocean-700">
           <p className="font-heading font-bold text-ocean-100 text-lg">🎛️ Admin</p>
-          <p className="text-ocean-400 text-xs mt-0.5">Winter Trivia Night</p>
+          <p className="text-ocean-400 text-xs mt-0.5">Winter Party Trivia</p>
         </div>
         <nav className="flex-1 py-3 space-y-0.5 px-2">
           {NAV_ITEMS.map(item => (

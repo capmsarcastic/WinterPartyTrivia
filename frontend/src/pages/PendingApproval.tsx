@@ -5,6 +5,7 @@ import { usePlayer } from '../contexts/PlayerContext'
 import { useDeviceId } from '../hooks/useDeviceId'
 import { STRINGS } from '../strings'
 import { getStoredPlayerName } from './Splash'
+import pendingApprovalGif from '../../img/pendingapproval.gif'
 import type { Team } from '../types'
 
 export default function PendingApproval() {
@@ -84,7 +85,7 @@ export default function PendingApproval() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
       <div className="text-7xl mb-6 animate-pulse-slow">
-        {autoJoining ? '🎉' : <img src="/img/pendingapproval.gif" alt="Pending approval" className="w-16 h-16" />}
+        {autoJoining ? '🎉' : <img src={pendingApprovalGif} alt="Pending approval" className="w-16 h-16" />}
       </div>
       <h1 className="font-heading text-2xl font-bold text-ocean-50 mb-2">
         {autoJoining ? STRINGS.pending.joiningMessage : STRINGS.pending.heading}
