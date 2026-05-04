@@ -82,7 +82,7 @@ export default function TeamLobby() {
       // If we've confirmed membership before and we're no longer in the list, we were booted
       if (hasConfirmedMembershipRef.current && !newMembers.find(m => m.id === player.id)) {
         clearSession()
-        navigate('/join', { replace: true, state: { message: 'You have been removed from this team. The passcode has changed.' } })
+        navigate('/join', { replace: true, state: { message: STRINGS.lobby.bootedSelfMessage } })
         return
       }
       if (newMembers.find(m => m.id === player.id)) {
@@ -138,9 +138,16 @@ export default function TeamLobby() {
       })
       .subscribe()
 
-    // Heartbeat every 30s
-    heartbeatRef.current = setInterval(() => {
-      if (player) playerApi.heartbeat(deviceId, player.id).catch(() => {})
+    // Heartbeat every 30s — also checks if player has been kicked
+    heartbeatRef.current = setInterval(async () => {
+      if (!player) return
+      try {
+        const res = await playerApi.heartbeat(deviceId, player.id) as { status: string }
+        if (res.status !== 'active') {
+          clearSession()
+          navigate('/join', { replace: true, state: { message: STRINGS.lobby.bootedSelfMessage } })
+        }
+      } catch { /* ignore network errors */ }
     }, 30_000)
 
     return () => {

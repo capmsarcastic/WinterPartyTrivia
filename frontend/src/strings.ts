@@ -86,6 +86,7 @@ export const STRINGS = {
     messageSent: 'Message sent!',
     passcodeLoading: 'Loading...',
     bootedMessage: (name: string, code: string) => `${name} has been removed. New passcode: ${code}`,
+    bootedSelfMessage: "You've been removed from the team. The passcode has changed — ask a teammate for the new one.",
   },
 
   roundAnswer: {

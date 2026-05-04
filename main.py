@@ -608,10 +608,11 @@ async def player_send_message(req: PlayerMessageRequest, request: Request):
 @app.put("/api/player/heartbeat")
 async def player_heartbeat(req: HeartbeatRequest, request: Request):
     device_id = get_device_id(request)
-    sb().table("players").update({
+    result = sb().table("players").update({
         "last_seen_at": now_utc().isoformat()
-    }).eq("id", req.player_id).eq("device_id", device_id).execute()
-    return {"ok": True}
+    }).eq("id", req.player_id).eq("device_id", device_id).select("status").execute()
+    status = result.data[0]["status"] if result.data else "kicked"
+    return {"ok": True, "status": status}
 
 
 @app.get("/api/player/team-passcode")
